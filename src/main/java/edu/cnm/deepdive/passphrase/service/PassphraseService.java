@@ -20,8 +20,14 @@ public class PassphraseService implements AbstractPassphraseService {
   }
 
   @Override
-  public List<Passphrase> readAll(User user) {
+  public List<Passphrase> read(User user) {
     return user.getPassphrases();
+  }
+
+  @Override
+  public List<Passphrase> read(User user, String fragment) {
+    return repository
+        .findAllByUserAndNameContainsIgnoreCaseOrderByNameAsc(user, fragment);
   }
 
   @Override
@@ -35,9 +41,6 @@ public class PassphraseService implements AbstractPassphraseService {
   public Passphrase create(User user, Passphrase passphrase) {
     List<Word> words = passphrase.getWords();
     if (words.isEmpty()) {
-      if (passphrase.getLength() <= 0) {
-        throw new IllegalArgumentException(String.format("Invalid length: %d; must be positive.", passphrase.getLength()));
-      }
       provider
           .generate(passphrase.getLength())
           .stream()

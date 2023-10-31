@@ -7,8 +7,10 @@ import java.util.UUID;
 
 public interface AbstractPassphraseService {
   
-  List<Passphrase> readAll(User user);
-  
+  List<Passphrase> read(User user);
+
+  List<Passphrase> read(User user, String fragment);
+
   Passphrase read(User user, UUID key);
   
   Passphrase create(User user, Passphrase passphrase);

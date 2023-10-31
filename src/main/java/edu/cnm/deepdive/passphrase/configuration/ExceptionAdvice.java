@@ -17,4 +17,8 @@ public class ExceptionAdvice {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Request parameters or payload are invalid.")
   public void badRequest() {}
 
+  @ExceptionHandler(java.sql.SQLException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Payload (user or passphrase) violates SQL constraint; not written to the database.")
+  public void sqlConstraintViolation() {}
+
 }

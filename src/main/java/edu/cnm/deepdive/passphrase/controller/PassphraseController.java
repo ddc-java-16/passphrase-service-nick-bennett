@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,7 +39,12 @@ public class PassphraseController {
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Passphrase> get() {
-    return passphraseService.readAll(userService.getCurentUser());
+    return passphraseService.read(userService.getCurentUser());
+  }
+
+  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE, params = {"q"})
+  public List<Passphrase> get(@RequestParam("q") String fragment) {
+    return passphraseService.read(userService.getCurentUser(), fragment);
   }
 
   @GetMapping(value = "/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
