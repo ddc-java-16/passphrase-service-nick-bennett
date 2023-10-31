@@ -77,7 +77,8 @@ public class Passphrase {
   private final List<Word> words = new LinkedList<>();
 
   @Transient
-  private transient int length;
+  @JsonProperty(access = Access.WRITE_ONLY)
+  private int length;
 
   @NonNull
   public Long getId() {
