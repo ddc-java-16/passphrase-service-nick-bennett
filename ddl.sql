@@ -1,5 +1,6 @@
 create sequence passphrase_seq start with 1 increment by 50;
 create sequence user_profile_seq start with 1 increment by 50;
+create sequence word_seq start with 1 increment by 50;
 create table passphrase
 (
     created       timestamp(6) with time zone not null,
@@ -8,7 +9,8 @@ create table passphrase
     user_id       bigint                      not null,
     external_key  UUID                        not null unique,
     name          varchar(255)                not null,
-    primary key (passphrase_id)
+    primary key (passphrase_id),
+    constraint UKpbu2ldv6l1eaabxbjpgu2i7ca unique (user_id, name)
 );
 create table user_profile
 (
