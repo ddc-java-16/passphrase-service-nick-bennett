@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface PassphraseRepository extends JpaRepository<Passphrase, Long> {
 
@@ -13,6 +14,6 @@ public interface PassphraseRepository extends JpaRepository<Passphrase, Long> {
 
   Optional<Passphrase> findByUserAndKey(User user, UUID key);
 
-  List<Passphrase> findAllByUserAndNameContainsOrderByNameAsc(User user, String nameFragment);
+  List<Passphrase> findAllByUserAndNameContainsIgnoreCaseOrderByNameAsc(User user, String nameFragment);
 
 }
