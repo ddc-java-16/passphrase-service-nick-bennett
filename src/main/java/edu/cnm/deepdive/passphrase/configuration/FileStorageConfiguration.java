@@ -12,13 +12,15 @@ import org.springframework.stereotype.Component;
 @Configuration
 public class FileStorageConfiguration {
 
-  /** Flag controlling whether application home directory will be used as file storage home. */
+  /** Flag controlling use of application home directory as file storage parent directory. */
   private boolean applicationHome = true;
-  private String path;
-  private List<String> contentTypes;
+  /** Base file-storage directory (relative to application home or working directory). */
   private String directory = "uploads";
+  /** Pattern used to construct and extract subdirectory structure, based on filename. */
   private Pattern subdirectoryPattern = Pattern.compile("^(.{4})(.{2})(.{2}).*$");
-  private Set<String> whitelist = new LinkedHashSet<>();
+  /** Allowed MIME types for uploaded files. */
+  private Set<String> whitelist = Set.of();
+  /** Properties used in construction of filename. */
   private FilenameProperties filename;
 
   public boolean isApplicationHome() {
@@ -27,22 +29,6 @@ public class FileStorageConfiguration {
 
   public void setApplicationHome(boolean applicationHome) {
     this.applicationHome = applicationHome;
-  }
-
-  public String getPath() {
-    return path;
-  }
-
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  public List<String> getContentTypes() {
-    return contentTypes;
-  }
-
-  public void setContentTypes(List<String> contentTypes) {
-    this.contentTypes = contentTypes;
   }
 
   public String getDirectory() {
@@ -80,8 +66,11 @@ public class FileStorageConfiguration {
 
   public static class FilenameProperties {
 
+    /** Name to use if original filename is not provided in upload. */
     private String unknown;
+    /** Format string used in generation of filename. */
     private String format;
+    /** Upper bound on random number used in filenames to avoid name collisions. */
     private int randomizerLimit;
     private TimestampProperties timestamp;
 

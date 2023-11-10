@@ -3,32 +3,38 @@ package edu.cnm.deepdive.passphrase.service;
 import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration;
 import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration.FilenameProperties;
 import edu.cnm.deepdive.passphrase.configuration.FileStorageConfiguration.FilenameProperties.TimestampProperties;
-import java.awt.MediaTracker;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.random.RandomGenerator;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Profile("service")
 public class LocalFilesystemStorageService implements StorageService {
 
-  private static final String KEY_PATH_DELIMITER = "/";
-  private static final String KEY_PATH_FORMAT = "%s" + KEY_PATH_DELIMITER + "%s";
+  private static final String KEY_PATH_DELIMITER = FileSystems.getDefault().getSeparator();
   private static final String INVALID_MEDIA_FORMAT = "%s is not allowed in this storage service.";
 
   private final RandomGenerator rng;
@@ -38,7 +44,6 @@ public class LocalFilesystemStorageService implements StorageService {
   private final DateFormat formatter;
   private final String filenameFormat;
   private final int randomizerLimit;
-  private final List<MediaType> contentTypes;
 
   @Autowired
   public LocalFilesystemStorageService(
@@ -54,10 +59,6 @@ public class LocalFilesystemStorageService implements StorageService {
     uploadDirectory.toFile().mkdirs();
     subdirectoryPattern = configuration.getSubdirectoryPattern();
     whitelist = configuration.getWhitelist();
-    contentTypes = whitelist
-        .stream()
-        .map(MediaType::valueOf)
-        .collect(Collectors.toList());
     filenameFormat = filenameProperties.getFormat();
     randomizerLimit = filenameProperties.getRandomizerLimit();
     formatter = new SimpleDateFormat(timestampProperties.getFormat());
@@ -65,19 +66,65 @@ public class LocalFilesystemStorageService implements StorageService {
   }
 
   @Override
-  public String store(MultipartFile file) throws IOException, HttpMediaTypeException {
-    return null;
+  public String store(MultipartFile file) throws IOException, MediaTypeException {
+    if (!whitelist.contains(file.getContentType())) {
+      throw new MediaTypeException(String.format(INVALID_MEDIA_FORMAT, file.getContentType()));
+    }
+    String originalFilename = file.getOriginalFilename();
+    String newFilename = String.format(
+        filenameFormat,
+        formatter.format(new Date()),
+        rng.nextInt(randomizerLimit),
+        getExtension((originalFilename != null) ? originalFilename : "")
+    );
+    String subdirectory = getSubdirectory(newFilename);
+    Path resolvedPath = uploadDirectory.resolve(subdirectory);
+    //noinspection ResultOfMethodCallIgnored
+    resolvedPath.toFile().mkdirs();
+    Files.copy(file.getInputStream(), resolvedPath.resolve(newFilename));
+    return newFilename;
   }
 
   @Override
   public Resource retrieve(String key) throws IOException {
-    return null;
+    return new UrlResource(resolve(key).toUri());
   }
 
   @Override
   public boolean delete(String key)
       throws IOException, UnsupportedOperationException, SecurityException {
-    return false;
+    try {
+      File file = resolve(key).toFile();
+      return file.delete();
+    } catch (InvalidPathException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @NonNull
+  private String getExtension(@NonNull String filename) {
+    int position;
+    position = filename.lastIndexOf('.');
+    return ((position) >= 0) ? filename.substring(position + 1) : "";
+  }
+
+  @NonNull
+  private String getSubdirectory(@NonNull String filename) {
+    String path;
+    Matcher matcher = subdirectoryPattern.matcher(filename);
+    if (matcher.matches()) {
+      path = IntStream.rangeClosed(1, matcher.groupCount())
+          .mapToObj(matcher::group)
+          .collect(Collectors.joining(KEY_PATH_DELIMITER));
+    } else {
+      path = "";
+    }
+    return path;
+  }
+
+  @NonNull
+  private Path resolve(@NonNull String key) {
+    return uploadDirectory.resolve(getSubdirectory(key)).resolve(key);
   }
 
 }
