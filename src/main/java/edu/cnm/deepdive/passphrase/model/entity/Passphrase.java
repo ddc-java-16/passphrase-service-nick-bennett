@@ -89,6 +89,12 @@ public class Passphrase {
   @OrderBy("order ASC")
   private final List<Word> words = new LinkedList<>();
 
+  @NonNull
+  @OneToMany(mappedBy = "passphrase", fetch = FetchType.EAGER,
+      cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("created DESC")
+  private final List<Attachment> attachments = new LinkedList<>();
+
   @Transient
   @JsonProperty(access = Access.WRITE_ONLY)
   private int length;
@@ -142,6 +148,10 @@ public class Passphrase {
   @NonNull
   public List<Word> getWords() {
     return words;
+  }
+  
+  public List<Attachment> getAttachments() {
+    return attachments;
   }
 
   @PrePersist
