@@ -6,6 +6,7 @@ import edu.cnm.deepdive.passphrase.service.AbstractUserService;
 import java.net.URI;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/passphrases/{passphraseKey}/attachments")
+@Profile("service")
 public class AttachmentController {
 
   private final AbstractUserService userService;

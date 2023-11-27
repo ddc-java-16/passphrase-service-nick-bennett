@@ -1,6 +1,19 @@
+create sequence attachment_seq start with 1 increment by 50;
 create sequence passphrase_seq start with 1 increment by 50;
 create sequence user_profile_seq start with 1 increment by 50;
 create sequence word_seq start with 1 increment by 50;
+create table attachment
+(
+    attachment_id bigint                      not null,
+    created       timestamp(6) with time zone not null,
+    passphrase_id bigint                      not null,
+    size          bigint                      not null,
+    external_key  uuid                        not null,
+    content_type  varchar(255)                not null,
+    filename      varchar(255)                not null,
+    storage_key   varchar(255)                not null,
+    primary key (attachment_id)
+);
 create table passphrase
 (
     created       timestamp(6) with time zone not null,
@@ -30,7 +43,60 @@ create table word
     content       varchar(255) not null,
     primary key (word_id)
 );
-alter table passphrase
+alter table if exists attachment
+    add constraint FK1yx0di2bphyg1hni4ipy1nfoe foreign key (passphrase_id) references passphrase;
+alter table if exists passphrase
     add constraint FKiwr3cg06n40nkoa4m0kligpnv foreign key (user_id) references user_profile;
-alter table word
+alter table if exists word
+    add constraint FKpsougjtl2ab3j1new78wig2rv foreign key (passphrase_id) references passphrase;
+create sequence attachment_seq start with 1 increment by 50;
+create sequence passphrase_seq start with 1 increment by 50;
+create sequence user_profile_seq start with 1 increment by 50;
+create sequence word_seq start with 1 increment by 50;
+create table attachment
+(
+    attachment_id bigint                      not null,
+    created       timestamp(6) with time zone not null,
+    passphrase_id bigint                      not null,
+    size          bigint                      not null,
+    external_key  uuid                        not null,
+    content_type  varchar(255)                not null,
+    filename      varchar(255)                not null,
+    storage_key   varchar(255)                not null,
+    primary key (attachment_id)
+);
+create table passphrase
+(
+    created       timestamp(6) with time zone not null,
+    modified      timestamp(6) with time zone not null,
+    passphrase_id bigint                      not null,
+    user_id       bigint                      not null,
+    external_key  UUID                        not null unique,
+    name          varchar(255)                not null,
+    primary key (passphrase_id),
+    constraint UKpbu2ldv6l1eaabxbjpgu2i7ca unique (user_id, name)
+);
+create table user_profile
+(
+    created         timestamp(6) with time zone not null,
+    modified        timestamp(6) with time zone not null,
+    user_profile_id bigint                      not null,
+    external_key    UUID                        not null unique,
+    oauth_key       varchar(30)                 not null unique,
+    display_name    varchar(255),
+    primary key (user_profile_id)
+);
+create table word
+(
+    position      integer      not null,
+    passphrase_id bigint       not null,
+    word_id       bigint       not null,
+    content       varchar(255) not null,
+    primary key (word_id)
+);
+alter table if exists attachment
+    add constraint FK1yx0di2bphyg1hni4ipy1nfoe foreign key (passphrase_id) references passphrase;
+alter table if exists passphrase
+    add constraint FKiwr3cg06n40nkoa4m0kligpnv foreign key (user_id) references user_profile;
+alter table if exists word
     add constraint FKpsougjtl2ab3j1new78wig2rv foreign key (passphrase_id) references passphrase;

@@ -3,6 +3,7 @@ package edu.cnm.deepdive.passphrase.controller;
 import edu.cnm.deepdive.passphrase.model.entity.User;
 import edu.cnm.deepdive.passphrase.service.AbstractUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/users")
+@Profile("service")
 public class UserController {
 
   private final AbstractUserService userService;
