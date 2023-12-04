@@ -1,7 +1,10 @@
 package edu.cnm.deepdive.passphrase.service;
 
 import edu.cnm.deepdive.passphrase.configuration.DicewareConfiguration;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,7 +24,8 @@ public class WordListProvider implements WordProvider {
   @Autowired
   public WordListProvider(DicewareConfiguration configuration) {
     Resource resource = new ClassPathResource(configuration.getWordList());
-    try (Stream<String> stream = Files.lines(Paths.get(resource.getURI()))) {
+    try (Stream<String> stream =
+        new BufferedReader(new InputStreamReader(resource.getInputStream())).lines()) {
       words = stream
           .map(String::strip)
           .filter((line) -> !line.isEmpty())
